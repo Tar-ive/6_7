@@ -2,6 +2,12 @@
 
 Train a YOLO model with MLX, run webcam inference, and stop an alarm only when a trained hand/stop gesture is detected.
 
+## What 6_7 Means
+
+`6_7` refers to the 2025 "six seven" Internet meme and gesture: both hands are held forward with palms up, then moved in an alternating up/down motion like a balancing scale. In this project, that gesture is the alarm-off signal. The camera keeps the alarm active until the pose pipeline sees enough repeated 6_7 hand movements.
+
+Reference: [6-7 on Wikipedia](https://en.wikipedia.org/wiki/6-7).
+
 ## Layout
 
 ```text
