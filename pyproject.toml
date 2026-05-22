@@ -13,7 +13,7 @@ dependencies = [
   "lap>=0.5.12",
   "pyyaml>=6.0",
   "ultralytics>=8.0",
-  "yolo-mlx @ git+https://github.com/thewebAI/yolo-mlx.git",
+  "yolo-mlx @ git+https://github.com/Tar-ive/yolo-mlx.git@codex/pose26-mlx",
 ]
 
 [project.optional-dependencies]

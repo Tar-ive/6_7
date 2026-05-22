@@ -11,6 +11,7 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="configs/pose_alarm.yaml")
     p.add_argument("--weights")
+    p.add_argument("--backend", choices=["mlx", "ultralytics"])
     p.add_argument("--source")
     p.add_argument("--camera-index", type=int)
     p.add_argument("--conf", type=float)
@@ -20,6 +21,8 @@ def main() -> None:
     cfg = PoseConfig.from_yaml(args.config)
     if args.weights:
         cfg.weights = args.weights
+    if args.backend:
+        cfg.backend = args.backend
     if args.source:
         cfg.source = args.source
     if args.camera_index is not None:

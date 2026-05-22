@@ -1,4 +1,5 @@
-weights: models/yolo26n-pose.pt
+backend: mlx
+weights: models/yolo26n-pose.npz
 source:
 camera_index: 0
 imgsz: 640

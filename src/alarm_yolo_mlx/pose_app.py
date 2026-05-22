@@ -5,7 +5,15 @@ import cv2
 from .alarm import Alarm
 from .camera import Camera
 from .config import PoseConfig
-from .pose import LEFT_ELBOW, LEFT_SHOULDER, LEFT_WRIST, RIGHT_ELBOW, RIGHT_SHOULDER, RIGHT_WRIST, YoloPoseDetector
+from .pose import (
+    LEFT_ELBOW,
+    LEFT_SHOULDER,
+    LEFT_WRIST,
+    RIGHT_ELBOW,
+    RIGHT_SHOULDER,
+    RIGHT_WRIST,
+    make_pose_detector,
+)
 from .pose_gate import Pose67Gate
 
 
@@ -13,7 +21,8 @@ class PoseAlarmApp:
     def __init__(self, cfg: PoseConfig) -> None:
         self.cfg = cfg
         self.camera = Camera(cfg.source or cfg.camera_index)
-        self.detector = YoloPoseDetector(cfg.weights, cfg.conf, cfg.imgsz)
+        self.detector = make_pose_detector(cfg.backend, cfg.weights, cfg.conf, cfg.imgsz)
+        print(f"pose backend={self.detector.backend_name} imgsz={cfg.imgsz} conf={cfg.conf}")
         self.gate = Pose67Gate(
             cfg.required_movements,
             cfg.window_frames,
@@ -51,9 +60,25 @@ class PoseAlarmApp:
                 x1, y1, x2, y2 = map(int, pose.box)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (80, 180, 255), 2)
                 if pose.track_id:
-                    cv2.putText(frame, f"person #{pose.track_id}", (x1, max(20, y1 - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (80, 180, 255), 2)
-            for a, b in [(LEFT_SHOULDER, LEFT_ELBOW), (LEFT_ELBOW, LEFT_WRIST), (RIGHT_SHOULDER, RIGHT_ELBOW), (RIGHT_ELBOW, RIGHT_WRIST)]:
-                if pose.conf[a] > self.cfg.min_keypoint_conf and pose.conf[b] > self.cfg.min_keypoint_conf:
+                    cv2.putText(
+                        frame,
+                        f"person #{pose.track_id}",
+                        (x1, max(20, y1 - 8)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.55,
+                        (80, 180, 255),
+                        2,
+                    )
+            for a, b in [
+                (LEFT_SHOULDER, LEFT_ELBOW),
+                (LEFT_ELBOW, LEFT_WRIST),
+                (RIGHT_SHOULDER, RIGHT_ELBOW),
+                (RIGHT_ELBOW, RIGHT_WRIST),
+            ]:
+                if (
+                    pose.conf[a] > self.cfg.min_keypoint_conf
+                    and pose.conf[b] > self.cfg.min_keypoint_conf
+                ):
                     pa, pb = tuple(map(int, pose.xy[a])), tuple(map(int, pose.xy[b]))
                     cv2.line(frame, pa, pb, (30, 220, 70), 3)
                     cv2.circle(frame, pa, 4, (30, 220, 70), -1)
@@ -67,6 +92,15 @@ class PoseAlarmApp:
             (20, 78),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.85,
+            (255, 255, 255),
+            2,
+        )
+        cv2.putText(
+            frame,
+            f"backend {self.detector.backend_name}",
+            (20, 112),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.55,
             (255, 255, 255),
             2,
         )

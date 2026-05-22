@@ -5,7 +5,7 @@ import argparse
 
 from alarm_yolo_mlx.camera import Camera
 from alarm_yolo_mlx.config import PoseConfig
-from alarm_yolo_mlx.pose import YoloPoseDetector
+from alarm_yolo_mlx.pose import make_pose_detector
 from alarm_yolo_mlx.pose_gate import Pose67Gate
 
 
@@ -14,6 +14,7 @@ def main() -> None:
     p.add_argument("--config", default="configs/pose_alarm.yaml")
     p.add_argument("--source", required=True)
     p.add_argument("--weights")
+    p.add_argument("--backend", choices=["mlx", "ultralytics"])
     p.add_argument("--conf", type=float)
     p.add_argument("--max-frames", type=int, default=300)
     args = p.parse_args()
@@ -21,11 +22,14 @@ def main() -> None:
     cfg = PoseConfig.from_yaml(args.config)
     if args.weights:
         cfg.weights = args.weights
+    if args.backend:
+        cfg.backend = args.backend
     if args.conf is not None:
         cfg.conf = args.conf
 
     camera = Camera(args.source)
-    detector = YoloPoseDetector(cfg.weights, cfg.conf, cfg.imgsz)
+    detector = make_pose_detector(cfg.backend, cfg.weights, cfg.conf, cfg.imgsz)
+    print(f"pose backend={detector.backend_name} imgsz={cfg.imgsz} conf={cfg.conf}")
     gate = Pose67Gate(
         cfg.required_movements,
         cfg.window_frames,
