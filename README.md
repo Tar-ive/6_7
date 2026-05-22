@@ -34,15 +34,7 @@ data/hand_alarm/
   labels/val/*.txt
 ```
 
-Your current labels are LabelMe-style JSON boxes for `forearm` and `underarm`. Convert them first:
-
-```bash
-python scripts/prepare_dataset.py \
-  --sources data/frames data/people-balancing-pose \
-  --out data/yolo_hand_alarm
-```
-
-That creates:
+Dataset
 
 ```text
 data/yolo_hand_alarm/
