@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from yolo26mlx import YOLO
 
 
 @dataclass(frozen=True)
@@ -13,6 +12,7 @@ class Detection:
     conf: float
     cls: int
     name: str
+    track_id: int | None = None
 
 
 class YoloMlxDetector:
@@ -22,12 +22,15 @@ class YoloMlxDetector:
         conf: float = 0.45,
         imgsz: int = 640,
         target_classes: list[str] | None = None,
+        class_names: dict[int, str] | None = None,
     ) -> None:
-        self.model = YOLO(weights)
+        from yolo26mlx import YOLO
+
+        self.model = YOLO(weights, verbose=False)
         self.conf = conf
         self.imgsz = imgsz
         self.target_classes = {str(c) for c in target_classes or []}
-        self.names = getattr(self.model, "names", {}) or {}
+        self.names = class_names or getattr(self.model, "names", {}) or {}
 
     def detect(self, frame: np.ndarray) -> list[Detection]:
         result = self.model.predict(frame, conf=self.conf, imgsz=self.imgsz)[0]
@@ -54,5 +57,5 @@ class YoloMlxDetector:
             if len(row) < 6:
                 continue
             cls = int(row[5])
-            name = self.names.get(cls, str(cls)) if isinstance(self.names, dict) else str(cls)
+            name = self.names.get(cls, self.names.get(str(cls), str(cls))) if isinstance(self.names, dict) else str(cls)
             yield Detection(tuple(map(float, row[:4])), float(row[4]), cls, name)

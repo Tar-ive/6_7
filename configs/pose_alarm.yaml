@@ -1,0 +1,13 @@
+weights: models/yolo26n-pose.pt
+source:
+camera_index: 0
+imgsz: 640
+conf: 0.25
+required_movements: 7
+window_frames: 90
+min_keypoint_conf: 0.25
+max_elbow_angle: 140
+min_wrist_gap: 20
+max_missing_frames: 12
+alarm_sound: assets/alarm.wav
+show: true

@@ -11,17 +11,47 @@ except ModuleNotFoundError:
 @dataclass
 class AppConfig:
     weights: str
+    source: str | None = None
     camera_index: int = 0
     imgsz: int = 640
     conf: float = 0.45
     target_classes: list[str] | None = None
+    class_names: dict[int, str] | None = None
     required_hits: int = 5
     window_frames: int = 8
+    stop_mode: str = "motion"
+    motion_class: str = "forearm"
+    min_switches: int = 2
+    track_iou: float = 0.2
     alarm_sound: str | None = None
     show: bool = True
 
     @classmethod
     def from_yaml(cls, path: str) -> "AppConfig":
+        with open(path, "r", encoding="utf-8") as f:
+            raw = yaml.safe_load(f) if yaml else _simple_yaml(f.read())
+        allowed = {field.name for field in fields(cls)}
+        return cls(**{k: v for k, v in (raw or {}).items() if k in allowed})
+
+
+@dataclass
+class PoseConfig:
+    weights: str = "models/yolo26n-pose.pt"
+    source: str | None = None
+    camera_index: int = 0
+    imgsz: int = 640
+    conf: float = 0.25
+    required_movements: int = 4
+    window_frames: int = 90
+    min_keypoint_conf: float = 0.25
+    max_elbow_angle: float = 140
+    min_wrist_gap: float = 20
+    max_missing_frames: int = 12
+    alarm_sound: str | None = None
+    show: bool = True
+
+    @classmethod
+    def from_yaml(cls, path: str) -> "PoseConfig":
         with open(path, "r", encoding="utf-8") as f:
             raw = yaml.safe_load(f) if yaml else _simple_yaml(f.read())
         allowed = {field.name for field in fields(cls)}

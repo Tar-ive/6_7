@@ -15,6 +15,7 @@ def main() -> None:
     p.add_argument("--imgsz", type=int, default=640)
     p.add_argument("--name", default="hand_alarm_n")
     p.add_argument("--project", default="runs/train")
+    p.add_argument("--exist-ok", action="store_true")
     args = p.parse_args()
 
     model = YOLO(args.weights)
@@ -25,6 +26,7 @@ def main() -> None:
         imgsz=args.imgsz,
         project=args.project,
         name=args.name,
+        exist_ok=args.exist_ok,
     )
 
 

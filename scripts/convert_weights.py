@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
+from pathlib import Path
 
 
 def main() -> None:
@@ -12,7 +14,8 @@ def main() -> None:
     p.add_argument("--verify", action=argparse.BooleanOptionalAction, default=True)
     args = p.parse_args()
 
-    cmd = ["yolo-mlx", "converters", "convert", args.pt, "-o", args.out]
+    yolo = Path(sys.executable).with_name("yolo26")
+    cmd = [str(yolo), "converters", "convert", args.pt, "-o", args.out]
     if args.verify:
         cmd.append("--verify")
     subprocess.run(cmd, check=True)

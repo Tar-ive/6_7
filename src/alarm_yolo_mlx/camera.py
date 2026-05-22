@@ -4,16 +4,16 @@ import cv2
 
 
 class Camera:
-    def __init__(self, index: int = 0) -> None:
-        self.cap = cv2.VideoCapture(index)
+    def __init__(self, source: int | str = 0) -> None:
+        self.cap = cv2.VideoCapture(source)
         if not self.cap.isOpened():
-            raise RuntimeError(f"Could not open webcam index {index}")
+            raise RuntimeError(f"Could not open video source {source}")
 
     def frames(self):
         while True:
             ok, frame = self.cap.read()
             if not ok:
-                raise RuntimeError("Webcam frame read failed")
+                break
             yield frame
 
     def close(self) -> None:

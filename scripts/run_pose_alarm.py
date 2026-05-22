@@ -1,14 +1,15 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
 
-from .app import AlarmStopApp
-from .config import AppConfig
+from alarm_yolo_mlx.config import PoseConfig
+from alarm_yolo_mlx.pose_app import PoseAlarmApp
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--config", default="configs/alarm.yaml")
+    p.add_argument("--config", default="configs/pose_alarm.yaml")
     p.add_argument("--weights")
     p.add_argument("--source")
     p.add_argument("--camera-index", type=int)
@@ -16,7 +17,7 @@ def main() -> None:
     p.add_argument("--no-show", action="store_true")
     args = p.parse_args()
 
-    cfg = AppConfig.from_yaml(args.config)
+    cfg = PoseConfig.from_yaml(args.config)
     if args.weights:
         cfg.weights = args.weights
     if args.source:
@@ -28,8 +29,7 @@ def main() -> None:
     if args.no_show:
         cfg.show = False
 
-    stopped = AlarmStopApp(cfg).run()
-    print("alarm stopped" if stopped else "alarm exited")
+    print("alarm stopped" if PoseAlarmApp(cfg).run() else "alarm exited")
 
 
 if __name__ == "__main__":

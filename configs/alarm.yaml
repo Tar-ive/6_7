@@ -1,9 +1,15 @@
-weights: runs/train/hand_alarm_n/best.safetensors
+weights: runs/train/hand_alarm_smoke/best.safetensors
+source:
 camera_index: 0
 imgsz: 640
-conf: 0.45
-target_classes: [stop_hand, "0"]
+conf: 0.01
+target_classes: [forearm, underarm, "0", "1"]
+class_names: {0: forearm, 1: underarm}
 required_hits: 5
 window_frames: 8
+stop_mode: motion
+motion_class: forearm
+min_switches: 2
+track_iou: 0.2
 alarm_sound: assets/alarm.wav
 show: true
