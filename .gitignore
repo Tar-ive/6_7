@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+assets/*.wav
+data/
+models/*.pt
+models/*.npz
+runs/
+results/

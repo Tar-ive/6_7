@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alarm-yolo-mlx"
+version = "0.1.0"
+description = "MLX YOLO webcam alarm stopper"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=2.0",
+  "opencv-python>=4.9",
+  "pyyaml>=6.0",
+  "yolo-mlx @ git+https://github.com/thewebAI/yolo-mlx.git",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+convert = ["torch>=2.0", "ultralytics>=8.0", "safetensors>=0.4"]
+
+[project.scripts]
+alarm-yolo = "alarm_yolo_mlx.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100

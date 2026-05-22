@@ -1,0 +1,9 @@
+weights: runs/train/hand_alarm_n/best.safetensors
+camera_index: 0
+imgsz: 640
+conf: 0.45
+target_classes: [stop_hand, "0"]
+required_hits: 5
+window_frames: 8
+alarm_sound: assets/alarm.wav
+show: true

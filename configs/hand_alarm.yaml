@@ -1,0 +1,9 @@
+# YOLO detection dataset config.
+# Replace path with your labelled dataset root.
+path: data/hand_alarm
+train: images/train
+val: images/val
+
+# Class IDs must match label .txt files.
+names:
+  0: stop_hand
