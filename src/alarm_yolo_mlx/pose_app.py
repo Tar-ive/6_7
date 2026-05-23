@@ -18,10 +18,11 @@ from .pose_gate import Pose67Gate
 
 
 class PoseAlarmApp:
-    def __init__(self, cfg: PoseConfig) -> None:
+    def __init__(self, cfg: PoseConfig, alarm: Alarm | None = None, detector=None) -> None:
         self.cfg = cfg
+        self.alarm = alarm or Alarm(cfg.alarm_sound)
         self.camera = Camera(cfg.source or cfg.camera_index)
-        self.detector = make_pose_detector(cfg.backend, cfg.weights, cfg.conf, cfg.imgsz)
+        self.detector = detector or make_pose_detector(cfg.backend, cfg.weights, cfg.conf, cfg.imgsz)
         print(f"pose backend={self.detector.backend_name} imgsz={cfg.imgsz} conf={cfg.conf}")
         self.gate = Pose67Gate(
             cfg.required_movements,
@@ -31,7 +32,6 @@ class PoseAlarmApp:
             cfg.min_wrist_gap,
             cfg.max_missing_frames,
         )
-        self.alarm = Alarm(cfg.alarm_sound)
 
     def run(self) -> bool:
         self.alarm.start()

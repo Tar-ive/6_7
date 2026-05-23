@@ -22,6 +22,7 @@ convert = ["torch>=2.0", "safetensors>=0.4"]
 
 [project.scripts]
 alarm-yolo = "alarm_yolo_mlx.cli:main"
+alarm-yolo-gui = "alarm_yolo_mlx.web_gui:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
