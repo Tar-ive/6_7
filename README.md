@@ -66,13 +66,30 @@ data/yolo_hand_alarm/
 
 ## Weights
 
-The demo alarm uses the Ultralytics pose backend with `yolo26n-pose.pt`. Ultralytics downloads and caches that model automatically on first run. The first run may take a little longer while the model and font cache are prepared; later runs should start faster.
+The default pose config uses the MLX backend with `models/yolo26n-pose.npz`. The separate hackathon demo config uses the Ultralytics pose backend with `yolo26n-pose.pt`, which Ultralytics downloads and caches automatically on first run. The first run may take a little longer while the model and font cache are prepared; later runs should start faster.
 
-Optional manual download for local files:
+Prepare the MLX pose model:
 
 ```bash
 scripts/download_weights.sh
-python scripts/convert_weights.py --pt models/yolo26n.pt --out models/yolo26n.npz
+python scripts/convert_weights.py \
+  --pt models/yolo26n-pose.pt \
+  --out models/yolo26n-pose.npz
+```
+
+Check that the converted file exists and is an NPZ archive:
+
+```bash
+ls -lh models/yolo26n-pose.npz
+python -c "import mlx.core as mx; print(len(mx.load('models/yolo26n-pose.npz')))"
+```
+
+Optional box-detector model conversion:
+
+```bash
+python scripts/convert_weights.py \
+  --pt models/yolo26n.pt \
+  --out models/yolo26n.npz
 ```
 
 ## Train
@@ -96,7 +113,7 @@ Current smoke run on the tiny local dataset reached `mAP50=0.9594`, but precisio
 Browser GUI path, recommended:
 
 ```bash
-python scripts/run_alarm_gui.py --config configs/pose_alarm.yaml
+python scripts/run_alarm_gui.py --config configs/pose_alarm_demo.yaml
 ```
 
 The command prints a local setup URL such as:
