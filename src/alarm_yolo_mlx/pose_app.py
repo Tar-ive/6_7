@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import cv2
 
-from .alarm import Alarm
+from .alarm import Alarm, play_once
 from .camera import Camera
 from .config import PoseConfig
 from .pose import (
@@ -22,8 +22,11 @@ class PoseAlarmApp:
         self.cfg = cfg
         self.alarm = alarm or Alarm(cfg.alarm_sound)
         self.camera = Camera(cfg.source or cfg.camera_index)
-        self.detector = detector or make_pose_detector(cfg.backend, cfg.weights, cfg.conf, cfg.imgsz)
+        self.detector = detector or make_pose_detector(
+            cfg.backend, cfg.weights, cfg.conf, cfg.imgsz
+        )
         print(f"pose backend={self.detector.backend_name} imgsz={cfg.imgsz} conf={cfg.conf}")
+        self._last_voice_count = 0
         self.gate = Pose67Gate(
             cfg.required_movements,
             cfg.window_frames,
@@ -40,6 +43,7 @@ class PoseAlarmApp:
             for frame in self.camera.frames():
                 poses = self.detector.detect(frame)
                 stopped = self.gate.update(poses)
+                self._play_movement_voice()
                 self._draw(frame, poses, stopped)
                 self.alarm.stop() if stopped else self.alarm.tick()
                 if self.cfg.show and cv2.waitKey(1) & 0xFF == ord("q"):
@@ -51,6 +55,12 @@ class PoseAlarmApp:
             self.camera.close()
             cv2.destroyAllWindows()
         return stopped
+
+    def _play_movement_voice(self) -> None:
+        count = self.gate.movement_count
+        if count > self._last_voice_count:
+            play_once(self.cfg.movement_sound)
+        self._last_voice_count = count
 
     def _draw(self, frame, poses, stopped: bool) -> None:
         if not self.cfg.show:

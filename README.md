@@ -84,6 +84,25 @@ ls -lh models/yolo26n-pose.npz
 python -c "import mlx.core as mx; print(len(mx.load('models/yolo26n-pose.npz')))"
 ```
 
+## Voice Cache
+
+The pose alarm uses cached ElevenLabs MP3s:
+
+```text
+assets/voice/get_up_67_alarm.mp3
+assets/voice/lets_go_67.mp3
+```
+
+Generate them once with the ElevenLabs voice ID `eXpIbVcVbLo8ZJQDlDnl`:
+
+```bash
+export ELEVENLABS_API_KEY="..."
+python scripts/generate_voice_cache.py
+unset ELEVENLABS_API_KEY
+```
+
+At runtime, the alarm loops the "get up" clip. Each time the 6_7 movement counter increases, the app plays the cached "let's go" clip.
+
 Optional box-detector model conversion:
 
 ```bash
@@ -195,7 +214,8 @@ Check that your config contains `backend: mlx` and `weights: models/yolo26n-pose
 If you cannot hear the alarm, test the sound file directly:
 
 ```bash
-afplay assets/alarm.wav
+afplay assets/voice/get_up_67_alarm.mp3
+afplay assets/voice/lets_go_67.mp3
 ```
 
 ## Detection Strategy

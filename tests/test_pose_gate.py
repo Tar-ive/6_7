@@ -16,5 +16,7 @@ def test_pose_gate_detects_alternating_wrists():
     gate = Pose67Gate(required_movements=2, min_wrist_gap=10)
     assert not gate.update([pose(150, 210)])
     assert not gate.update([pose(210, 150)])
+    assert gate.movement_count == 1
     assert gate.update([pose(150, 210)])
     assert gate.progress == "2/2"
+    assert gate.movement_count == 2

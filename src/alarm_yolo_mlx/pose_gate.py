@@ -55,6 +55,10 @@ class Pose67Gate:
     def progress(self) -> str:
         return f"{min(self.movements, self.required_movements)}/{self.required_movements}"
 
+    @property
+    def movement_count(self) -> int:
+        return min(self.movements, self.required_movements)
+
     def _missing(self, label: str = "missing") -> None:
         self.orders.append(label)
         self.missing_frames += 1

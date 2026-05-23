@@ -49,6 +49,7 @@ class PoseConfig:
     min_wrist_gap: float = 20
     max_missing_frames: int = 12
     alarm_sound: str | None = None
+    movement_sound: str | None = None
     show: bool = True
 
     @classmethod

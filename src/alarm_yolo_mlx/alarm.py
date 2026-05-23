@@ -44,3 +44,10 @@ class Alarm:
     def _beep(self) -> None:
         self._last_beep = time.monotonic()
         os.write(sys.stdout.fileno(), b"\a")
+
+
+def play_once(sound: str | None) -> None:
+    path = Path(sound) if sound else None
+    if not path or not path.exists() or not shutil.which("afplay"):
+        return
+    subprocess.Popen(["afplay", str(path)])
