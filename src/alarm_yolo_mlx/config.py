@@ -50,6 +50,7 @@ class PoseConfig:
     max_missing_frames: int = 12
     alarm_sound: str | None = None
     movement_sound: str | None = None
+    stopped_sound: str | None = None
     show: bool = True
 
     @classmethod

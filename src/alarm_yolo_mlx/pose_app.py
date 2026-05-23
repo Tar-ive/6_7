@@ -54,6 +54,8 @@ class PoseAlarmApp:
             self.alarm.stop()
             self.camera.close()
             cv2.destroyAllWindows()
+        if stopped:
+            play_once(self.cfg.stopped_sound)
         return stopped
 
     def _play_movement_voice(self) -> None:

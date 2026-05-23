@@ -21,6 +21,7 @@ MIN_MAX_VOLUME_DB = -30.0
 CLIPS = {
     "get_up_67_alarm.mp3": ("Get up! Get up! Do the six seven movement to turn the alarm off!"),
     "lets_go_67.mp3": "Let's go!",
+    "good_morning_alarm_off.mp3": "Good moooorning!",
 }
 
 

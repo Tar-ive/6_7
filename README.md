@@ -91,6 +91,7 @@ The pose alarm uses cached ElevenLabs MP3s:
 ```text
 assets/voice/get_up_67_alarm.mp3
 assets/voice/lets_go_67.mp3
+assets/voice/good_morning_alarm_off.mp3
 ```
 
 Generate them once with the ElevenLabs voice ID `eXpIbVcVbLo8ZJQDlDnl`:
@@ -101,7 +102,7 @@ python scripts/generate_voice_cache.py
 unset ELEVENLABS_API_KEY
 ```
 
-At runtime, the alarm loops the "get up" clip. Each time the 6_7 movement counter increases, the app plays the cached "let's go" clip.
+At runtime, the alarm loops the "get up" clip. Each time the 6_7 movement counter increases, the app plays the cached "let's go" clip. Once the alarm is stopped, it plays the long "good morning" clip once.
 
 Optional box-detector model conversion:
 
@@ -216,6 +217,7 @@ If you cannot hear the alarm, test the sound file directly:
 ```bash
 afplay assets/voice/get_up_67_alarm.mp3
 afplay assets/voice/lets_go_67.mp3
+afplay assets/voice/good_morning_alarm_off.mp3
 ```
 
 ## Detection Strategy
