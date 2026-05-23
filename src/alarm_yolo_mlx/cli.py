@@ -4,6 +4,7 @@ import argparse
 
 from .app import AlarmStopApp
 from .config import AppConfig
+from .schedule import add_alarm_schedule_args, scheduled_alarm_time, wait_until_alarm
 
 
 def main() -> None:
@@ -14,6 +15,7 @@ def main() -> None:
     p.add_argument("--camera-index", type=int)
     p.add_argument("--conf", type=float)
     p.add_argument("--no-show", action="store_true")
+    add_alarm_schedule_args(p)
     args = p.parse_args()
 
     cfg = AppConfig.from_yaml(args.config)
@@ -28,6 +30,7 @@ def main() -> None:
     if args.no_show:
         cfg.show = False
 
+    wait_until_alarm(scheduled_alarm_time(args))
     stopped = AlarmStopApp(cfg).run()
     print("alarm stopped" if stopped else "alarm exited")
 

@@ -5,6 +5,7 @@ import argparse
 
 from alarm_yolo_mlx.config import PoseConfig
 from alarm_yolo_mlx.pose_app import PoseAlarmApp
+from alarm_yolo_mlx.schedule import add_alarm_schedule_args, scheduled_alarm_time, wait_until_alarm
 
 
 def main() -> None:
@@ -16,6 +17,7 @@ def main() -> None:
     p.add_argument("--camera-index", type=int)
     p.add_argument("--conf", type=float)
     p.add_argument("--no-show", action="store_true")
+    add_alarm_schedule_args(p)
     args = p.parse_args()
 
     cfg = PoseConfig.from_yaml(args.config)
@@ -32,6 +34,7 @@ def main() -> None:
     if args.no_show:
         cfg.show = False
 
+    wait_until_alarm(scheduled_alarm_time(args))
     print("alarm stopped" if PoseAlarmApp(cfg).run() else "alarm exited")
 
 
