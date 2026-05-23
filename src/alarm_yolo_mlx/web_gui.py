@@ -52,7 +52,9 @@ class AlarmWebHandler(BaseHTTPRequestHandler):
         try:
             self.server.target = _target_from_form(form)
         except argparse.ArgumentTypeError as exc:
-            self._send_html(_index_page(datetime.now() + timedelta(minutes=1), str(exc)), status=400)
+            self._send_html(
+                _index_page(datetime.now() + timedelta(minutes=1), str(exc)), status=400
+            )
             return
 
         self.server.status = "armed"
@@ -390,8 +392,8 @@ def main() -> None:
         elif "load_npz" in str(exc) or "zip file" in str(exc):
             print(
                 f"pose weights failed to load: {cfg.weights}. The MLX backend expects a valid "
-                ".npz converted pose model. For the demo, run with --backend ultralytics "
-                "--weights yolo26n-pose.pt, or regenerate the .npz file."
+                ".npz converted pose model. Regenerate the .npz file or run with "
+                "--weights models/yolo26n-pose.npz."
             )
         raise
     server.status = "stopped" if stopped else "exited"

@@ -66,7 +66,7 @@ data/yolo_hand_alarm/
 
 ## Weights
 
-The default pose config uses the MLX backend with `models/yolo26n-pose.npz`. The separate hackathon demo config uses the Ultralytics pose backend with `yolo26n-pose.pt`, which Ultralytics downloads and caches automatically on first run. The first run may take a little longer while the model and font cache are prepared; later runs should start faster.
+The default pose config and hackathon demo config both use the MLX backend with `models/yolo26n-pose.npz`. If you see Ultralytics downloading `yolo26n-pose.pt`, you are running with `backend: ultralytics` or overriding the demo with `--backend ultralytics`.
 
 Prepare the MLX pose model:
 
@@ -176,7 +176,7 @@ To test against a saved video instead of the webcam:
 ```bash
 python scripts/probe_pose_video.py \
   --source /path/to/video.webm \
-  --weights yolo26n-pose.pt \
+  --weights models/yolo26n-pose.npz \
   --conf 0.25
 ```
 
@@ -184,14 +184,13 @@ python scripts/probe_pose_video.py \
 
 If the alarm rings but no camera window appears, check the terminal logs. On macOS, camera permission is usually the issue. Enable camera access for Terminal, iTerm, VS Code, Cursor, or whichever app launched Python, then fully quit and reopen that app.
 
-If the first run is slow, that is usually the model download/cache setup:
+If the first run downloads `yolo26n-pose.pt`, the app is not using MLX:
 
 ```text
 Downloading ... yolo26n-pose.pt
-Matplotlib is building the font cache
 ```
 
-Run the demo once before presenting so those one-time steps are already complete.
+Check that your config contains `backend: mlx` and `weights: models/yolo26n-pose.npz`.
 
 If you cannot hear the alarm, test the sound file directly:
 
