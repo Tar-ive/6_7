@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import cv2
 
 from .alarm import Alarm, play_once
@@ -27,6 +29,7 @@ class PoseAlarmApp:
         )
         print(f"pose backend={self.detector.backend_name} imgsz={cfg.imgsz} conf={cfg.conf}")
         self._last_voice_count = 0
+        self._last_prompt_at = 0.0
         self.gate = Pose67Gate(
             cfg.required_movements,
             cfg.window_frames,
@@ -43,6 +46,7 @@ class PoseAlarmApp:
             for frame in self.camera.frames():
                 poses = self.detector.detect(frame)
                 stopped = self.gate.update(poses)
+                self._play_prompt_voice()
                 self._play_movement_voice()
                 self._draw(frame, poses, stopped)
                 self.alarm.stop() if stopped else self.alarm.tick()
@@ -57,6 +61,14 @@ class PoseAlarmApp:
         if stopped:
             play_once(self.cfg.stopped_sound)
         return stopped
+
+    def _play_prompt_voice(self) -> None:
+        if self.gate.movement_count > 0:
+            return
+        now = time.monotonic()
+        if now - self._last_prompt_at >= self.cfg.prompt_interval_seconds:
+            play_once(self.cfg.prompt_sound)
+            self._last_prompt_at = now
 
     def _play_movement_voice(self) -> None:
         count = self.gate.movement_count
