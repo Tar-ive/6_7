@@ -1,0 +1,7 @@
+path: data/yolo_mug_phone
+train: images/train
+val: images/val
+nc: 2
+names:
+  0: mug
+  1: phone

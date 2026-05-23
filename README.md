@@ -84,17 +84,27 @@ ls -lh models/yolo26n-pose.npz
 python -c "import mlx.core as mx; print(len(mx.load('models/yolo26n-pose.npz')))"
 ```
 
-## Voice Cache
+## Alarm Audio
 
-The pose alarm uses cached ElevenLabs MP3s:
+The pose alarm uses your recorded alarm loop until the required 6_7 count is reached:
 
 ```text
-assets/voice/get_up_67_alarm.mp3
-assets/voice/lets_go_67.mp3
+assets/voice/alarm_loop.m4a
+```
+
+After the alarm is stopped, it plays this cached ElevenLabs clip once:
+
+```text
 assets/voice/good_morning_alarm_off.mp3
 ```
 
-Generate them once with the ElevenLabs voice ID `eXpIbVcVbLo8ZJQDlDnl`:
+If a phone is detected during the mug proof step, it plays this cached ElevenLabs clip:
+
+```text
+assets/voice/nah_buddy_photo.mp3
+```
+
+Regenerate the voice clips with the ElevenLabs voice ID `eXpIbVcVbLo8ZJQDlDnl`:
 
 ```bash
 export ELEVENLABS_API_KEY="..."
@@ -102,7 +112,7 @@ python scripts/generate_voice_cache.py
 unset ELEVENLABS_API_KEY
 ```
 
-At runtime, the alarm sound keeps ringing until the required 6_7 count is reached. The "get up" voice prompt plays every 10 seconds until the first 6_7 movement is detected. Each time the 6_7 movement counter increases, the app plays the cached "let's go" clip. Once the alarm is stopped, it plays the long "good morning" clip once.
+At runtime, `alarm_loop.m4a` keeps playing until the required 6_7 count and mug proof are reached. After 6_7 completes, the screen asks for a mug. If the object detector sees only a mug for a few consecutive frames, the alarm stops and the app plays the long "good morning" clip once. If it sees a phone, with or without a mug, it pauses the alarm and says "na na buddy, that won't work."
 
 Optional box-detector model conversion:
 
@@ -215,10 +225,9 @@ Check that your config contains `backend: mlx` and `weights: models/yolo26n-pose
 If you cannot hear the alarm, test the sound file directly:
 
 ```bash
-afplay assets/voice/get_up_67_alarm.mp3
-afplay assets/voice/lets_go_67.mp3
+afplay assets/voice/alarm_loop.m4a
 afplay assets/voice/good_morning_alarm_off.mp3
-afplay assets/alarm.wav
+afplay assets/voice/nah_buddy_photo.mp3
 ```
 
 ## Detection Strategy

@@ -10,9 +10,15 @@ min_keypoint_conf: 0.25
 max_elbow_angle: 140
 min_wrist_gap: 20
 max_missing_frames: 12
-alarm_sound: assets/alarm.wav
-prompt_sound: assets/voice/get_up_67_alarm.mp3
-prompt_interval_seconds: 10
-movement_sound: assets/voice/lets_go_67.mp3
+alarm_sound: assets/voice/alarm_loop.m4a
 stopped_sound: assets/voice/good_morning_alarm_off.mp3
+spoof_sound: assets/voice/nah_buddy_photo.mp3
+object_weights: models/mug_phone.safetensors
+object_conf: 0.35
+mug_classes: [0]
+phone_classes: [1]
+object_class_names:
+  0: mug
+  1: phone
+required_mug_frames: 5
 show: true

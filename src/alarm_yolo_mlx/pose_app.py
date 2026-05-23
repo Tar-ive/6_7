@@ -7,6 +7,7 @@ import cv2
 from .alarm import Alarm, play_once
 from .camera import Camera
 from .config import PoseConfig
+from .detector import YoloMlxDetector
 from .pose import (
     LEFT_ELBOW,
     LEFT_SHOULDER,
@@ -28,8 +29,15 @@ class PoseAlarmApp:
             cfg.backend, cfg.weights, cfg.conf, cfg.imgsz
         )
         print(f"pose backend={self.detector.backend_name} imgsz={cfg.imgsz} conf={cfg.conf}")
-        self._last_voice_count = 0
-        self._last_prompt_at = 0.0
+        proof_classes = [*(cfg.mug_classes or []), *(cfg.phone_classes or [])]
+        self.object_detector = YoloMlxDetector(
+            cfg.object_weights,
+            cfg.object_conf,
+            cfg.imgsz,
+            proof_classes,
+            cfg.object_class_names,
+        )
+        print(f"object backend=mlx:{cfg.object_weights} conf={cfg.object_conf}")
         self.gate = Pose67Gate(
             cfg.required_movements,
             cfg.window_frames,
@@ -38,18 +46,29 @@ class PoseAlarmApp:
             cfg.min_wrist_gap,
             cfg.max_missing_frames,
         )
+        self.pose_done = False
+        self.mug_frames = 0
+        self.spoof_seen = False
+        self.alarm_resume_at = 0.0
+        self.object_detections = []
 
     def run(self) -> bool:
         self.alarm.start()
         stopped = False
         try:
             for frame in self.camera.frames():
-                poses = self.detector.detect(frame)
-                stopped = self.gate.update(poses)
-                self._play_prompt_voice()
-                self._play_movement_voice()
+                if not self.pose_done:
+                    poses = self.detector.detect(frame)
+                    self.pose_done = self.gate.update(poses) or self.pose_done
+                else:
+                    poses = []
+                    self.object_detections = self.object_detector.detect(frame)
+                    stopped = self._update_mug_gate()
                 self._draw(frame, poses, stopped)
-                self.alarm.stop() if stopped else self.alarm.tick()
+                if stopped:
+                    self.alarm.stop()
+                elif time.monotonic() >= self.alarm_resume_at:
+                    self.alarm.tick()
                 if self.cfg.show and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 if stopped:
@@ -62,19 +81,26 @@ class PoseAlarmApp:
             play_once(self.cfg.stopped_sound)
         return stopped
 
-    def _play_prompt_voice(self) -> None:
-        if self.gate.movement_count > 0:
-            return
-        now = time.monotonic()
-        if now - self._last_prompt_at >= self.cfg.prompt_interval_seconds:
-            play_once(self.cfg.prompt_sound)
-            self._last_prompt_at = now
+    def _update_mug_gate(self) -> bool:
+        has_mug = any(self._is_mug(d) for d in self.object_detections)
+        has_phone = any(self._is_phone(d) for d in self.object_detections)
+        if has_phone:
+            self.mug_frames = 0
+            if not self.spoof_seen:
+                self.alarm.stop()
+                play_once(self.cfg.spoof_sound)
+                self.alarm_resume_at = time.monotonic() + 1.5
+                self.spoof_seen = True
+            return False
+        self.spoof_seen = False
+        self.mug_frames = self.mug_frames + 1 if has_mug else 0
+        return self.mug_frames >= self.cfg.required_mug_frames
 
-    def _play_movement_voice(self) -> None:
-        count = self.gate.movement_count
-        if count > self._last_voice_count:
-            play_once(self.cfg.movement_sound)
-        self._last_voice_count = count
+    def _is_mug(self, detection) -> bool:
+        return _matches(detection, self.cfg.mug_classes or [])
+
+    def _is_phone(self, detection) -> bool:
+        return _matches(detection, self.cfg.phone_classes or [])
 
     def _draw(self, frame, poses, stopped: bool) -> None:
         if not self.cfg.show:
@@ -112,7 +138,7 @@ class PoseAlarmApp:
         cv2.putText(frame, label, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
         cv2.putText(
             frame,
-            f"6_7 movements {self.gate.progress}",
+            self._status_line(),
             (20, 78),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.85,
@@ -128,4 +154,37 @@ class PoseAlarmApp:
             (255, 255, 255),
             2,
         )
+        self._draw_objects(frame)
         cv2.imshow("YOLO Pose Alarm", frame)
+
+    def _status_line(self) -> str:
+        if not self.pose_done:
+            return f"6_7 movements {self.gate.progress}"
+        return f"GET MUG {self.mug_frames}/{self.cfg.required_mug_frames} | phone blocks unlock"
+
+    def _draw_objects(self, frame) -> None:
+        if not self.pose_done:
+            return
+        for det in self.object_detections:
+            if self._is_mug(det):
+                color, label = (40, 220, 80), "mug"
+            elif self._is_phone(det):
+                color, label = (40, 40, 240), "phone - na na buddy"
+            else:
+                continue
+            x1, y1, x2, y2 = map(int, det.xyxy)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(
+                frame,
+                f"{label} {det.conf:.2f}",
+                (x1, max(20, y1 - 8)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.55,
+                color,
+                2,
+            )
+
+
+def _matches(detection, classes: list) -> bool:
+    wanted = {str(c) for c in classes}
+    return str(detection.cls) in wanted or detection.name in wanted

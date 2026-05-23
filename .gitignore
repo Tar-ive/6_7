@@ -6,7 +6,19 @@ __pycache__/
 
 assets/*.wav
 !assets/alarm.wav
-data/
+data/*
+!data/roboflow/
+data/roboflow/*
+!data/roboflow/.gitkeep
+!data/roboflow/coffee_mug/
+data/roboflow/coffee_mug/*
+!data/roboflow/coffee_mug/.gitkeep
+!data/roboflow/phone/
+data/roboflow/phone/*
+!data/roboflow/phone/.gitkeep
+!data/yolo_mug_phone/
+data/yolo_mug_phone/*
+!data/yolo_mug_phone/.gitkeep
 models/*.pt
 models/*.npz
 /*.pt

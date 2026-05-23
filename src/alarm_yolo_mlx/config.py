@@ -49,10 +49,14 @@ class PoseConfig:
     min_wrist_gap: float = 20
     max_missing_frames: int = 12
     alarm_sound: str | None = None
-    prompt_sound: str | None = None
-    prompt_interval_seconds: float = 10.0
-    movement_sound: str | None = None
     stopped_sound: str | None = None
+    spoof_sound: str | None = None
+    object_weights: str = "models/yolo26n.npz"
+    object_conf: float = 0.35
+    mug_classes: list[str] | None = None
+    phone_classes: list[str] | None = None
+    object_class_names: dict[int, str] | None = None
+    required_mug_frames: int = 5
     show: bool = True
 
     @classmethod
