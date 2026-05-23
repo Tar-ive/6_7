@@ -9,9 +9,12 @@ from pathlib import Path
 
 
 class Alarm:
-    def __init__(self, sound: str | None = None, interval: float = 0.8) -> None:
+    def __init__(
+        self, sound: str | None = None, interval: float = 0.8, volume: float = 0.8
+    ) -> None:
         self.sound = Path(sound) if sound else None
         self.interval = interval
+        self.volume = volume
         self._proc: subprocess.Popen[bytes] | None = None
         self._last_beep = 0.0
 
@@ -19,7 +22,7 @@ class Alarm:
         if self.running:
             return
         if self.sound and self.sound.exists() and shutil.which("afplay"):
-            self._proc = subprocess.Popen(["afplay", str(self.sound)])
+            self._proc = subprocess.Popen(["afplay", "-v", str(self.volume), str(self.sound)])
             return
         self._beep()
 
