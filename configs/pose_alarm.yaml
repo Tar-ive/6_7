@@ -1,5 +1,5 @@
-backend: mlx
-weights: models/yolo26n-pose.npz
+backend: ultralytics
+weights: yolo26n-pose.pt
 source:
 camera_index: 0
 imgsz: 640

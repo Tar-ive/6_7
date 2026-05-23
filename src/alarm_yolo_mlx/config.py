@@ -36,8 +36,8 @@ class AppConfig:
 
 @dataclass
 class PoseConfig:
-    backend: str = "mlx"
-    weights: str = "models/yolo26n-pose.npz"
+    backend: str = "ultralytics"
+    weights: str = "yolo26n-pose.pt"
     source: str | None = None
     camera_index: int = 0
     imgsz: int = 640

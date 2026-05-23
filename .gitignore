@@ -4,9 +4,11 @@ __pycache__/
 *.egg-info/
 
 assets/*.wav
+!assets/alarm.wav
 data/
 models/*.pt
 models/*.npz
+/*.pt
 runs/
 results/
 reports/
