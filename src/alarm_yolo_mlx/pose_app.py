@@ -67,9 +67,8 @@ class PoseAlarmApp:
         self.alarm.set_volume(self.cfg.alarm_full_volume)
         self.alarm.start()
         self._queue_speech(
-            "Alarm time. You need to do the 6 7 movement.",
+            "Do the 6 7.",
             self.cfg.start_prompt_sound,
-            pause_detection=True,
         )
         stopped = False
         try:
@@ -83,9 +82,8 @@ class PoseAlarmApp:
                         self._speak_set_progress()
                         if self.pose_done:
                             self._queue_speech(
-                                "Get the coffee cup right now!",
+                                "Get the mug.",
                                 self.cfg.mug_prompt_sound,
-                                pause_detection=True,
                             )
                 else:
                     poses = []
@@ -135,7 +133,7 @@ class PoseAlarmApp:
             and not self.mug_encouragement_spoken
         ):
             self._queue_speech(
-                "That's what I like to see. Hold steady, while I get your morning photo.",
+                "That's it. Hold steady.",
                 tag="mug_encouragement",
             )
             self.mug_encouragement_spoken = True
@@ -149,15 +147,9 @@ class PoseAlarmApp:
         remaining = self.movement_sets - done
         prefix = "One" if done == 1 else str(done)
         if remaining == 1:
-            self._queue_speech(
-                f"{prefix} down. You need to do it one more time.",
-                pause_detection=True,
-            )
+            self._queue_speech(f"{prefix} down. One more set.")
         elif remaining > 1:
-            self._queue_speech(
-                f"{prefix} down. You need to do it {remaining} more times.",
-                pause_detection=True,
-            )
+            self._queue_speech(f"{prefix} down. {remaining} more.")
 
     def _queue_speech(
         self,
@@ -227,6 +219,7 @@ class PoseAlarmApp:
     def _draw(self, frame, poses, stopped: bool) -> None:
         if not self.cfg.show:
             return
+        h, w = frame.shape[:2]
         for pose in poses:
             if pose.box:
                 x1, y1, x2, y2 = map(int, pose.box)
@@ -269,15 +262,67 @@ class PoseAlarmApp:
         )
         cv2.putText(
             frame,
-            f"backend {self.detector.backend_name}",
+            "YOLO26 MLX | Apple Silicon",
             (20, 112),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.55,
-            (255, 255, 255),
-            2,
+            (160, 160, 160),
+            1,
         )
+        if not stopped:
+            self._draw_stage_progress(frame, w)
         self._draw_objects(frame)
         cv2.imshow("YOLO Pose Alarm", frame)
+
+    def _draw_stage_progress(self, frame, frame_width: int) -> None:
+        bar_x = 20
+        bar_y = 130
+        bar_w = frame_width - 40
+        bar_h = 18
+        if not self.pose_done:
+            total = self.gate.required_movements
+            done = min(self.gate.movements, total)
+            self._draw_progress_bar(
+                frame, bar_x, bar_y, bar_w, bar_h,
+                done / total if total > 0 else 0,
+                (30, 200, 80),
+                f"{done}/{total} movements",
+            )
+        else:
+            required = self.cfg.required_mug_frames
+            self._draw_progress_bar(
+                frame, bar_x, bar_y, bar_w, bar_h,
+                min(self.mug_frames / required, 1.0) if required > 0 else 0,
+                (40, 180, 255),
+                f"{min(self.mug_frames, required)}/{required} mug frames",
+            )
+
+    @staticmethod
+    def _draw_progress_bar(
+        frame,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        progress: float,
+        color_fill,
+        label: str = "",
+    ) -> None:
+        cv2.rectangle(frame, (x, y), (x + width, y + height), (40, 40, 40), -1)
+        fill_w = int(width * min(max(progress, 0.0), 1.0))
+        if fill_w > 0:
+            cv2.rectangle(frame, (x, y), (x + fill_w, y + height), color_fill, -1)
+        cv2.rectangle(frame, (x, y), (x + width, y + height), (100, 100, 100), 1)
+        if label:
+            cv2.putText(
+                frame,
+                label,
+                (x + 6, y + height - 4),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.45,
+                (230, 230, 230),
+                1,
+            )
 
     def _status_line(self) -> str:
         if not self.pose_done:

@@ -2,16 +2,16 @@ backend: mlx
 weights: models/yolo26n-pose.npz
 source:
 camera_index: 0
-imgsz: 640
+imgsz: 416
 conf: 0.25
 required_movements: 7
 movement_sets_min: 2
 movement_sets_max: 2
 alarm_full_volume: 0.8
-alarm_duck_volume: 0.2
+alarm_duck_volume: 0.35
 window_frames: 90
 min_keypoint_conf: 0.25
-max_elbow_angle: 140
+max_elbow_angle: 160
 min_wrist_gap: 20
 max_missing_frames: 12
 alarm_sound: assets/voice/alarm_loop.m4a

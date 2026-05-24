@@ -189,8 +189,8 @@ def _index_page(default_time: datetime, error: str = "") -> str:
 </head>
 <body>
   <main>
-    <h1>6_7 Alarm</h1>
-    <p>Set the alarm time. When it rings, finish the 6_7 sets and mug proof.</p>
+    <h1>Don't Get Up</h1>
+    <p>Set the alarm. When it rings: do the 6/7 gesture, then show a real coffee mug. No shortcuts.</p>
     {error_html}
     <form method="post" action="/start">
       <label for="alarm_time">Alarm time</label>
@@ -244,16 +244,35 @@ def _armed_page(target: datetime) -> str:
     .error #countdown {{
       color: #ff7b7b;
     }}
+    .ringing #countdown {{
+      color: #ff5555;
+      animation: pulse 0.8s ease-in-out infinite;
+    }}
+    @keyframes pulse {{
+      0%, 100% {{ opacity: 1; }}
+      50% {{ opacity: 0.55; }}
+    }}
     p {{
       color: #c6c0b5;
+    }}
+    .badge {{
+      display: inline-block;
+      margin-top: 18px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #1e2226;
+      color: #888;
+      font-size: 12px;
+      letter-spacing: 0.04em;
     }}
   </style>
 </head>
 <body>
   <main>
-    <h1>Alarm Armed</h1>
+    <h1>Don't Get Up</h1>
     <div id="countdown">--</div>
     <p id="detail">Ringing at {target:%Y-%m-%d %H:%M:%S}. Keep this terminal running.</p>
+    <div class="badge">YOLO26 MLX · On-device · Apple Silicon</div>
   </main>
   <script>
     const target = new Date("{target.isoformat()}").getTime();
@@ -270,12 +289,13 @@ def _armed_page(target: datetime) -> str:
         detail.textContent = data.detail || detail.textContent;
         document.body.classList.toggle("stopped", backendStatus === "stopped");
         document.body.classList.toggle("error", backendStatus === "error");
+        document.body.classList.toggle("ringing", backendStatus === "ringing");
         if (backendStatus === "preparing") {{
           heading.textContent = "Alarm Armed";
           el.textContent = "Preparing model";
         }} else if (backendStatus === "ringing") {{
-          heading.textContent = "Alarm Ringing";
-          el.textContent = "Do 6_7";
+          heading.textContent = "Wake Up!";
+          el.textContent = "Do 6/7 → grab mug";
         }} else if (backendStatus === "stopped" || backendStatus === "exited") {{
           heading.textContent = "Alarm Stopped";
           el.textContent = "Stopped";

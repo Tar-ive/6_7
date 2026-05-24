@@ -21,6 +21,7 @@ data/yolo_mug_phone/*
 !data/yolo_mug_phone/.gitkeep
 models/*.pt
 models/*.npz
+!models/yolo26n-pose.npz
 /*.pt
 runs/
 results/
