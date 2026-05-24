@@ -55,6 +55,7 @@ class PoseAlarmApp:
         self.mug_frames = 0
         self.spoof_seen = False
         self.full_phone_warning_played = False
+        self.mug_encouragement_spoken = False
         self.alarm_resume_at = 0.0
         self.object_detections = []
         self.voice_proc: subprocess.Popen | None = None
@@ -129,6 +130,15 @@ class PoseAlarmApp:
             return False
         self._stop_phone_speech()
         self.mug_frames = self.mug_frames + 1 if has_mug else 0
+        if (
+            self.mug_frames >= self.cfg.mug_encouragement_frames
+            and not self.mug_encouragement_spoken
+        ):
+            self._queue_speech(
+                "That's what I like to see. Hold steady, while I get your morning photo.",
+                tag="mug_encouragement",
+            )
+            self.mug_encouragement_spoken = True
         return self.mug_frames >= self.cfg.required_mug_frames
 
     def _speak_set_progress(self) -> None:

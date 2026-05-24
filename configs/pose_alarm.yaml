@@ -6,7 +6,7 @@ imgsz: 640
 conf: 0.25
 required_movements: 7
 movement_sets_min: 1
-movement_sets_max: 3
+movement_sets_max: 2
 alarm_full_volume: 0.8
 alarm_duck_volume: 0.2
 window_frames: 90
@@ -15,10 +15,10 @@ max_elbow_angle: 140
 min_wrist_gap: 20
 max_missing_frames: 12
 alarm_sound: assets/voice/alarm_loop.m4a
-start_prompt_sound: assets/voice/alarm_time_do_67.mp3
-mug_prompt_sound: assets/voice/get_coffee_cup_right_now.mp3
-stopped_sound: assets/voice/good_morning_rise_shine.mp3
-spoof_sound: assets/voice/nah_buddy_not_with_me.mp3
+start_prompt_sound:
+mug_prompt_sound:
+stopped_sound:
+spoof_sound:
 object_weights: models/mug_phone.safetensors
 object_conf: 0.30
 mug_conf: 0.30
@@ -28,5 +28,6 @@ phone_classes: [1]
 object_class_names:
   0: mug
   1: phone
-required_mug_frames: 5
+mug_encouragement_frames: 5
+required_mug_frames: 50
 show: true

@@ -64,6 +64,7 @@ class PoseConfig:
     mug_classes: list[str] | None = None
     phone_classes: list[str] | None = None
     object_class_names: dict[int, str] | None = None
+    mug_encouragement_frames: int = 5
     required_mug_frames: int = 5
     show: bool = True
 
