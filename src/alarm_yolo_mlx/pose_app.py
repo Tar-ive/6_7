@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import random
+import subprocess
 import time
 
 import cv2
@@ -38,8 +40,11 @@ class PoseAlarmApp:
             cfg.object_class_names,
         )
         print(f"object backend=mlx:{cfg.object_weights} conf={cfg.object_conf}")
+        self.movement_sets = random.randint(cfg.movement_sets_min, cfg.movement_sets_max)
+        self.movements_per_set = cfg.required_movements
+        self.completed_sets = 0
         self.gate = Pose67Gate(
-            cfg.required_movements,
+            self.movements_per_set * self.movement_sets,
             cfg.window_frames,
             cfg.min_keypoint_conf,
             cfg.max_elbow_angle,
@@ -51,19 +56,40 @@ class PoseAlarmApp:
         self.spoof_seen = False
         self.alarm_resume_at = 0.0
         self.object_detections = []
+        self.voice_proc: subprocess.Popen | None = None
+        self.voice_tag: str | None = None
+        self.voice_pauses_detection = False
+        self.voice_queue: list[tuple[str, str | None, bool, str | None]] = []
 
     def run(self) -> bool:
+        self.alarm.set_volume(self.cfg.alarm_full_volume)
         self.alarm.start()
+        self._queue_speech(
+            "Alarm time. You need to do the 6 7 movement.",
+            self.cfg.start_prompt_sound,
+            pause_detection=True,
+        )
         stopped = False
         try:
             for frame in self.camera.frames():
+                self._update_speech()
+                detection_paused = self.voice_pauses_detection
                 if not self.pose_done:
-                    poses = self.detector.detect(frame)
-                    self.pose_done = self.gate.update(poses) or self.pose_done
+                    poses = [] if detection_paused else self.detector.detect(frame)
+                    if not detection_paused:
+                        self.pose_done = self.gate.update(poses) or self.pose_done
+                        self._speak_set_progress()
+                        if self.pose_done:
+                            self._queue_speech(
+                                "Get the coffee cup right now!",
+                                self.cfg.mug_prompt_sound,
+                                pause_detection=True,
+                            )
                 else:
                     poses = []
-                    self.object_detections = self.object_detector.detect(frame)
-                    stopped = self._update_mug_gate()
+                    if not detection_paused:
+                        self.object_detections = self.object_detector.detect(frame)
+                        stopped = self._update_mug_gate()
                 self._draw(frame, poses, stopped)
                 if stopped:
                     self.alarm.stop()
@@ -75,10 +101,15 @@ class PoseAlarmApp:
                     break
         finally:
             self.alarm.stop()
+            self._stop_speech()
             self.camera.close()
             cv2.destroyAllWindows()
         if stopped:
-            play_once(self.cfg.stopped_sound)
+            play_once(
+                self.cfg.stopped_sound,
+                wait=True,
+                text="Good morning. Rise and shine!",
+            )
         return stopped
 
     def _update_mug_gate(self) -> bool:
@@ -86,21 +117,99 @@ class PoseAlarmApp:
         has_phone = any(self._is_phone(d) for d in self.object_detections)
         if has_phone:
             self.mug_frames = 0
-            if not self.spoof_seen:
-                self.alarm.stop()
-                play_once(self.cfg.spoof_sound)
-                self.alarm_resume_at = time.monotonic() + 1.5
-                self.spoof_seen = True
+            if not self._phone_speech_active:
+                self._queue_speech(
+                    "Na na buddy! That won't work, not with me.",
+                    self.cfg.spoof_sound,
+                    tag="phone",
+                )
             return False
-        self.spoof_seen = False
+        self._stop_phone_speech()
         self.mug_frames = self.mug_frames + 1 if has_mug else 0
         return self.mug_frames >= self.cfg.required_mug_frames
 
+    def _speak_set_progress(self) -> None:
+        done = self.gate.movement_count // self.movements_per_set
+        if done <= self.completed_sets:
+            return
+        self.completed_sets = done
+        remaining = self.movement_sets - done
+        prefix = "One" if done == 1 else str(done)
+        if remaining == 1:
+            self._queue_speech(
+                f"{prefix} down. You need to do it one more time.",
+                pause_detection=True,
+            )
+        elif remaining > 1:
+            self._queue_speech(
+                f"{prefix} down. You need to do it {remaining} more times.",
+                pause_detection=True,
+            )
+
+    def _queue_speech(
+        self,
+        text: str,
+        sound: str | None = None,
+        *,
+        pause_detection: bool = False,
+        tag: str | None = None,
+    ) -> None:
+        self.voice_queue.append((text, sound, pause_detection, tag))
+        self._update_speech()
+
+    def _update_speech(self) -> None:
+        if self.voice_proc and self.voice_proc.poll() is None:
+            return
+        if self.voice_proc:
+            self.voice_proc = None
+            self.voice_tag = None
+            self.voice_pauses_detection = False
+            self.alarm.set_volume(self.cfg.alarm_full_volume)
+        if not self.voice_queue:
+            return
+        text, sound, pause_detection, tag = self.voice_queue.pop(0)
+        self.alarm.set_volume(self.cfg.alarm_duck_volume)
+        self.voice_proc = play_once(sound, text=text)
+        self.voice_tag = tag
+        self.voice_pauses_detection = pause_detection
+        if not self.voice_proc:
+            self.voice_tag = None
+            self.voice_pauses_detection = False
+            self.alarm.set_volume(self.cfg.alarm_full_volume)
+
+    def _stop_speech(self) -> None:
+        self.voice_queue.clear()
+        if self.voice_proc and self.voice_proc.poll() is None:
+            self.voice_proc.terminate()
+        self.voice_proc = None
+        self.voice_tag = None
+        self.voice_pauses_detection = False
+
+    @property
+    def _phone_speech_active(self) -> bool:
+        if self.voice_tag == "phone" and self.voice_proc and self.voice_proc.poll() is None:
+            return True
+        return any(tag == "phone" for _, _, _, tag in self.voice_queue)
+
+    def _stop_phone_speech(self) -> None:
+        self.voice_queue = [item for item in self.voice_queue if item[3] != "phone"]
+        if self.voice_tag != "phone":
+            return
+        if self.voice_proc and self.voice_proc.poll() is None:
+            self.voice_proc.terminate()
+        self.voice_proc = None
+        self.voice_tag = None
+        self.voice_pauses_detection = False
+        self.alarm.set_volume(self.cfg.alarm_full_volume)
+
     def _is_mug(self, detection) -> bool:
-        return _matches(detection, self.cfg.mug_classes or [])
+        return detection.conf >= self.cfg.mug_conf and _matches(detection, self.cfg.mug_classes or [])
 
     def _is_phone(self, detection) -> bool:
-        return _matches(detection, self.cfg.phone_classes or [])
+        return (
+            detection.conf >= self.cfg.phone_conf
+            and _matches(detection, self.cfg.phone_classes or [])
+        )
 
     def _draw(self, frame, poses, stopped: bool) -> None:
         if not self.cfg.show:
@@ -159,7 +268,7 @@ class PoseAlarmApp:
 
     def _status_line(self) -> str:
         if not self.pose_done:
-            return f"6_7 movements {self.gate.progress}"
+            return f"6_7 set {self.completed_sets}/{self.movement_sets} | movements {self.gate.progress}"
         return f"GET MUG {self.mug_frames}/{self.cfg.required_mug_frames} | phone blocks unlock"
 
     def _draw_objects(self, frame) -> None:

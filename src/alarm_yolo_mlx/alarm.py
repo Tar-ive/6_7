@@ -15,13 +15,39 @@ class Alarm:
         self.sound = Path(sound) if sound else None
         self.interval = interval
         self.volume = volume
-        self._proc: subprocess.Popen[bytes] | None = None
+        self._proc: subprocess.Popen | None = None
         self._last_beep = 0.0
 
     def start(self) -> None:
         if self.running:
             return
-        if self.sound and self.sound.exists() and shutil.which("afplay"):
+        self._start_sound()
+
+    def set_volume(self, volume: float) -> None:
+        self.volume = volume
+        if not self.running or not self._proc or not self._proc.stdin:
+            return
+        try:
+            self._proc.stdin.write(f"volume {volume}\n")
+            self._proc.stdin.flush()
+        except (BrokenPipeError, OSError):
+            self._proc = None
+
+    def _start_sound(self) -> None:
+        if not self.sound or not self.sound.exists():
+            self._beep()
+            return
+        helper = Path(__file__).with_name("loop_alarm_player.swift")
+        if shutil.which("swift") and helper.exists():
+            self._proc = subprocess.Popen(
+                ["swift", str(helper), str(self.sound), str(self.volume)],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                text=True,
+            )
+            return
+        if shutil.which("afplay"):
             self._proc = subprocess.Popen(["afplay", "-v", str(self.volume), str(self.sound)])
             return
         self._beep()
@@ -37,7 +63,16 @@ class Alarm:
 
     def stop(self) -> None:
         if self._proc and self._proc.poll() is None:
-            self._proc.terminate()
+            if self._proc.stdin:
+                try:
+                    self._proc.stdin.write("stop\n")
+                    self._proc.stdin.flush()
+                except (BrokenPipeError, OSError):
+                    pass
+            try:
+                self._proc.wait(timeout=0.3)
+            except subprocess.TimeoutExpired:
+                self._proc.terminate()
         self._proc = None
 
     @property
@@ -49,8 +84,21 @@ class Alarm:
         os.write(sys.stdout.fileno(), b"\a")
 
 
-def play_once(sound: str | None) -> None:
+def play_once(
+    sound: str | None,
+    *,
+    wait: bool = False,
+    text: str | None = None,
+) -> subprocess.Popen | None:
     path = Path(sound) if sound else None
-    if not path or not path.exists() or not shutil.which("afplay"):
-        return
-    subprocess.Popen(["afplay", str(path)])
+    if path and path.exists() and shutil.which("afplay"):
+        proc = subprocess.Popen(["afplay", str(path)])
+        if wait:
+            proc.wait()
+        return proc
+    if text and shutil.which("say"):
+        proc = subprocess.Popen(["say", text])
+        if wait:
+            proc.wait()
+        return proc
+    return None

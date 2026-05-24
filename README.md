@@ -86,22 +86,19 @@ python -c "import mlx.core as mx; print(len(mx.load('models/yolo26n-pose.npz')))
 
 ## Alarm Audio
 
-The pose alarm uses your recorded alarm loop until the required 6_7 count is reached:
+The pose alarm uses your recorded alarm loop through the whole wake-up game:
 
 ```text
 assets/voice/alarm_loop.m4a
 ```
 
-After the alarm is stopped, it plays this cached ElevenLabs clip once:
+The spoken game prompts use these cached ElevenLabs clips when available:
 
 ```text
-assets/voice/good_morning_alarm_off.mp3
-```
-
-If a phone is detected during the mug proof step, it plays this cached ElevenLabs clip:
-
-```text
-assets/voice/nah_buddy_photo.mp3
+assets/voice/alarm_time_do_67.mp3
+assets/voice/get_coffee_cup_right_now.mp3
+assets/voice/good_morning_rise_shine.mp3
+assets/voice/nah_buddy_not_with_me.mp3
 ```
 
 Regenerate the voice clips with the ElevenLabs voice ID `eXpIbVcVbLo8ZJQDlDnl`:
@@ -112,7 +109,7 @@ python scripts/generate_voice_cache.py
 unset ELEVENLABS_API_KEY
 ```
 
-At runtime, `alarm_loop.m4a` keeps playing until the required 6_7 count and mug proof are reached. After 6_7 completes, the screen asks for a mug. If the object detector sees only a mug for a few consecutive frames, the alarm stops and the app plays the long "good morning" clip once. If it sees a phone, with or without a mug, it pauses the alarm and says "na na buddy, that won't work."
+At runtime, `alarm_loop.m4a` keeps playing until the randomized 6_7 sets and mug proof are reached. Each run randomly asks for 1-3 full sets, where one set is the configured `required_movements` count. Spoken prompts duck the alarm to 20%, then restore full volume. After each non-final set, the app tells you how many sets remain. After all sets complete, it says "Get the coffee cup right now!" If the detector sees a phone during the mug proof step, it says "Na na buddy! That won't work, not with me." while the alarm keeps looping. Once the mug is held long enough, the alarm stops and the app says "Good morning. Rise and shine!"
 
 Optional box-detector model conversion:
 
@@ -161,7 +158,7 @@ User flow:
 2. Keep the terminal process running.
 3. The browser page shows the countdown and live alarm status.
 4. When the alarm rings, the camera window opens.
-5. Do the 6_7 alternating hand motion to stop the alarm.
+5. Do the requested 6_7 sets, then show the coffee mug to stop the alarm.
 ```
 
 The browser status should move through:

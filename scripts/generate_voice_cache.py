@@ -19,8 +19,10 @@ MIN_AUDIO_BYTES = 4_000
 MIN_MAX_VOLUME_DB = -30.0
 
 CLIPS = {
-    "good_morning_alarm_off.mp3": "Good moooorning!",
-    "nah_buddy_photo.mp3": "Na na buddy, that won't work.",
+    "alarm_time_do_67.mp3": "Alarm time. You need to do the 6 7 movement.",
+    "get_coffee_cup_right_now.mp3": "Get the coffee cup right now!",
+    "good_morning_rise_shine.mp3": "Good morning. Rise and shine!",
+    "nah_buddy_not_with_me.mp3": "Na na buddy! That won't work, not with me.",
 }
 
 

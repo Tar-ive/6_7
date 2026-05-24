@@ -27,5 +27,8 @@ alarm-yolo-gui = "alarm_yolo_mlx.web_gui:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+alarm_yolo_mlx = ["loop_alarm_player.swift"]
+
 [tool.ruff]
 line-length = 100
