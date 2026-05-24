@@ -190,7 +190,7 @@ def _index_page(default_time: datetime, error: str = "") -> str:
 <body>
   <main>
     <h1>6_7 Alarm</h1>
-    <p>Set the alarm time. When it rings, do the 6_7 motion to shut it up.</p>
+    <p>Set the alarm time. When it rings, finish the 6_7 sets and mug proof.</p>
     {error_html}
     <form method="post" action="/start">
       <label for="alarm_time">Alarm time</label>
@@ -377,7 +377,7 @@ def main() -> None:
     alarm = Alarm(cfg.alarm_sound)
     alarm.start()
     server.status = "ringing"
-    server.detail = "Alarm is ringing. Do the 6_7 gesture to stop it."
+    server.detail = "Alarm is ringing. Finish the 6_7 sets and mug proof."
     try:
         stopped = PoseAlarmApp(cfg, alarm=alarm, detector=detector).run()
     except Exception as exc:
@@ -397,7 +397,7 @@ def main() -> None:
             )
         raise
     server.status = "stopped" if stopped else "exited"
-    server.detail = "Alarm stopped by 6_7 gesture." if stopped else "Alarm exited."
+    server.detail = "Alarm stopped after 6_7 sets and mug proof." if stopped else "Alarm exited."
     print("alarm stopped" if stopped else "alarm exited")
     time.sleep(3)
     server.shutdown()
