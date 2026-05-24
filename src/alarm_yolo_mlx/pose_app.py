@@ -54,6 +54,7 @@ class PoseAlarmApp:
         self.pose_done = False
         self.mug_frames = 0
         self.spoof_seen = False
+        self.full_phone_warning_played = False
         self.alarm_resume_at = 0.0
         self.object_detections = []
         self.voice_proc: subprocess.Popen | None = None
@@ -118,11 +119,13 @@ class PoseAlarmApp:
         if has_phone:
             self.mug_frames = 0
             if not self._phone_speech_active:
+                tag = "phone_full" if not self.full_phone_warning_played else "phone"
                 self._queue_speech(
                     "Na na buddy! That won't work, not with me.",
                     self.cfg.spoof_sound,
-                    tag="phone",
+                    tag=tag,
                 )
+                self.full_phone_warning_played = True
             return False
         self._stop_phone_speech()
         self.mug_frames = self.mug_frames + 1 if has_mug else 0
