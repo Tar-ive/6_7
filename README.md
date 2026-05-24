@@ -4,6 +4,14 @@
 
 Set it once. When it rings, you have to do the 6/7 gesture — both arms alternating up and down like a balancing scale — _and_ hold a real coffee mug in front of the camera. No snooze button. No shortcuts. Runs fully on-device with YOLO26 MLX on Apple Silicon.
 
+## Demo
+
+Demo video link: https://youtu.be/vi7vPIOT0Yw
+
+| Setup | Ringing |
+|:-----:|:-------:|
+| ![Alarm setup page showing time picker and demo buttons](assets/screenshots/setup.png) | ![Browser ringing state — "Wake Up! Do 6/7 → grab mug"](assets/screenshots/ringing.png) |
+
 ## What it does
 
 When the alarm fires, two things have to happen in order:
@@ -18,15 +26,17 @@ Both stages completed → alarm off → "Good morning. Rise and shine!"
 
 ## Why we built it
 
-Sleep inertia is the enemy. Snooze buttons are its weapon. Every "alarm clock" app assumes you'll cooperate — that you'll stand up or solve a puzzle while you're still half-asleep. This one makes you prove you're actually awake: your arms have to be moving, your brain has to know which hand is which, and you had to walk to the kitchen. The 6/7 gesture is 2025's version of "solve this math problem to snooze", but actually annoying enough to work.
+Sleep inertia is the enemy. Snooze buttons are its weapon. Every "alarm clock" app assumes you'll cooperate — that you'll stand up or solve a puzzle while you're still half-asleep. This one makes you prove you're actually awake: your arms have to be moving, your brain has to know which hand is which, and you had to walk to the kitchen. The 6/7 gesture is the modern Gen Z version of "solve this math problem to snooze" — but actually annoying enough to work.
+
+If the Artemis crew can do 6/7 in space, you can do it right after waking up.
 
 ## Track
 
-**Wild** — using on-device pose estimation and custom object detection to hold your morning hostage until you prove you're awake.
+**Wild.** The hackathon prompt literally lists "an alarm clock that only stops when it detects you holding a coffee" as a Wild example — we took that and added a layer: you have to earn the mug by first doing the internet's most recognizable hand gesture. The alarm has opinions. It will taunt you for trying to cheat it with a phone photo. It will not negotiate. It is, objectively, unhinged — and that's the point.
 
 ## Hardware
 
-- Apple Silicon Mac (M-series, macOS 13+)
+- Apple M3 Pro, macOS 15
 - Built-in webcam
 
 ## Model variant
@@ -137,7 +147,7 @@ afplay assets/voice/alarm_loop.m4a
 
 ## Social post
 
-[X/LinkedIn post](LINK_HERE) — #YOLOMLX
+[X](LINK_HERE) — #YOLOMLX
 
 ---
 
