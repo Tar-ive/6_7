@@ -147,7 +147,7 @@ afplay assets/voice/alarm_loop.m4a
 
 ## Social post
 
-[X](LINK_HERE) — #YOLOMLX
+[X](https://x.com/saksham_adh/status/2058712860935512244) — #YOLOMLX
 
 ---
 
