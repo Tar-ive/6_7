@@ -36,7 +36,7 @@ If the Artemis crew can do 6/7 in space, you can do it right after waking up.
 
 ## Hardware
 
-- Apple M3 Pro, macOS 15
+- Apple M3 Pro - 18GB RAM, macOS 15
 - Built-in webcam
 
 ## Model variant
