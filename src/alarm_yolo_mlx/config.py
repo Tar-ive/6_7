@@ -48,6 +48,12 @@ class PoseConfig:
     max_elbow_angle: float = 140
     min_wrist_gap: float = 20
     max_missing_frames: int = 12
+    min_wrist_amplitude: float = 55
+    require_arms_up: bool = True
+    idle_reset_frames: int = 45
+    detection_window: int = 8
+    mug_min_hits: int = 5
+    phone_min_hits: int = 4
     alarm_sound: str | None = None
     alarm_full_volume: float = 0.8
     alarm_duck_volume: float = 0.2

@@ -10,10 +10,16 @@ movement_sets_max: 2
 alarm_full_volume: 0.8
 alarm_duck_volume: 0.2
 window_frames: 90
-min_keypoint_conf: 0.25
-max_elbow_angle: 140
-min_wrist_gap: 20
+min_keypoint_conf: 0.3
+max_elbow_angle: 135
+min_wrist_gap: 22
 max_missing_frames: 12
+min_wrist_amplitude: 70
+require_arms_up: true
+idle_reset_frames: 45
+detection_window: 8
+mug_min_hits: 5
+phone_min_hits: 4
 alarm_sound: assets/voice/alarm_loop.m4a
 start_prompt_sound:
 mug_prompt_sound:

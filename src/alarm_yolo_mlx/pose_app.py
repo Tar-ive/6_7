@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import subprocess
 import time
+from collections import deque
 
 import cv2
 
@@ -50,8 +51,13 @@ class PoseAlarmApp:
             cfg.max_elbow_angle,
             cfg.min_wrist_gap,
             cfg.max_missing_frames,
+            min_wrist_amplitude=cfg.min_wrist_amplitude,
+            require_arms_up=cfg.require_arms_up,
+            idle_reset_frames=cfg.idle_reset_frames,
         )
         self.pose_done = False
+        self.mug_history: deque[bool] = deque(maxlen=cfg.detection_window)
+        self.phone_history: deque[bool] = deque(maxlen=cfg.detection_window)
         self.mug_frames = 0
         self.spoof_seen = False
         self.full_phone_warning_played = False
@@ -113,8 +119,12 @@ class PoseAlarmApp:
         return stopped
 
     def _update_mug_gate(self) -> bool:
-        has_mug = any(self._is_mug(d) for d in self.object_detections)
-        has_phone = any(self._is_phone(d) for d in self.object_detections)
+        # Temporal smoothing: require N-of-M recent frames so a single mis-detection
+        # neither resets the mug hold nor false-triggers the "na na buddy" spoof voice.
+        self.mug_history.append(any(self._is_mug(d) for d in self.object_detections))
+        self.phone_history.append(any(self._is_phone(d) for d in self.object_detections))
+        has_mug = sum(self.mug_history) >= self.cfg.mug_min_hits
+        has_phone = sum(self.phone_history) >= self.cfg.phone_min_hits
         if has_phone:
             self.mug_frames = 0
             if not self._phone_speech_active:
